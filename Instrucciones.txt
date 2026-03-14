@@ -1,0 +1,91 @@
+Eres un arquitecto senior de sistemas agentic AI especializado en redes. Vamos a crear desde cero el proyecto "AI-NO-MikroTik" (AI Network Operations para MikroTik) siguiendo exactamente esta arquitectura modular agentic:
+
+[PEGA AQUÍ COMPLETA LA ARQUITECTURA QUE TE DI ANTES – el diagrama Mermaid + tabla de capas + componentes]
+flowchart TD
+    %% Capa Usuario e Intents
+    User[Usuario / Operador<br/>Intents en lenguaje natural] --> Intent[Intent Manager<br/>+ RAG Policies/SLAs]
+
+    %% Capa Percepción y Datos (ZSM Data Services)
+    subgraph Datos [Capa Percepción & Datos]
+        Telemetry[Telemetry Collectors<br/>gNMI / SNMP / NETCONF / Kafka] 
+        DataLake[(Data Lake + Time-Series DB<br/>+ Vector DB + Knowledge Graph<br/>Topología + Histórico)]
+    end
+
+    %% Capa Integración MCP (Skills de fabricantes)
+    subgraph MCP [Capa Integración MCP - Vendor Provided]
+        MCP_Cisco[Cisco MCP Servers<br/>Catalyst Center + Meraki + Secure Firewall]
+        MCP_Juniper[Juniper MCP Server<br/>Junos + Mist AI]
+        MCP_Huawei[Huawei iMaster / Otros Vendors<br/>+ Community MCP]
+        Skills[Skills/Tools expuestas<br/>Config, Telemetry, Assurance, Security]
+    end
+
+    %% Capa Agentes (Multi-Agente)
+    subgraph Agentes [Capa Agentes Especializados]
+        Orchestrator[Super Agent / Orchestrator<br/>Planificador LLM + A2A Protocol]
+        Mon[Agente Monitoreo & Anomaly Detection<br/>ML + Digital Twin]
+        Opt[Agente Optimización & Self-Healing<br/>RL + Traffic Engineering]
+        Sec[Agente Seguridad & Compliance]
+        Fault[Agente Fault & Root Cause]
+        Config[Agente Configuración & Provisioning]
+        DomainAgents[Agentes de Dominio Telco/Enterprise<br/>RAN / Core / SD-WAN / DC]
+    end
+
+    %% Capa Ejecución y Razónamiento
+    Reasoning[LLM Reasoning Engine<br/>+ ML Models + RAG]
+    Execution[Execution Engine<br/>Closed-Loop Automation]
+
+    %% Flujos
+    User --> Intent
+    Intent --> Orchestrator
+    Telemetry --> DataLake
+    DataLake <--> MCP_Cisco & MCP_Juniper & MCP_Huawei
+    MCP_Cisco & MCP_Juniper & MCP_Huawei --> Skills
+    Skills --> Mon & Opt & Sec & Fault & Config & DomainAgents
+    Mon & Opt & Sec & Fault & Config & DomainAgents <--> Orchestrator
+    Orchestrator <--> Reasoning
+    Reasoning --> Execution
+    Execution --> Skills & MCP_*
+    DataLake <--> Reasoning
+
+Componentes, Funciones y Relaciones
+Capa,Componentes principales,Funciones clave,Relaciones principales
+Usuario e Intents,"Intent Manager + RAG (políticas, SLAs, 3GPP/TM Forum)",Traducir “Optimiza slicing 5G para low-latency” a plan de acción,Alimenta Orchestrator
+Percepción & Datos,Collectors + Data Lake + Vector DB + Graph DB,"Telemetría en tiempo real, RAG, digital twin de topología",Fuente única de verdad para todos los agentes
+Integración MCP,"Servidores MCP de Cisco, Juniper, Huawei + community","Exponer skills seguras (leer config, aplicar cambio, query KPI, etc.)",Agentes llaman skills vía MCP (estándar abierto)
+Agentes,Orchestrator + 6-8 agentes especializados + agentes de dominio,"Percepción → Razón → Acción autónoma. Cada agente tiene memoria, tools y goal propio",Comunicación A2A (Agent-to-Agent) + shared memory. Orchestrator delega y resuelve conflictos
+Razonamiento & Ejecución,"LLM core (Groq, Claude, Nova, etc.) + ML models + Closed-Loop","Planificación multi-paso, predicción, ejecución segura",Closed-loops por dominio (ZSM style)
+
+Requisitos específicos para este MVP inicial (solo MikroTik):
+
+1. Usar el MCP Server oficial de MikroTik: https://github.com/jeff-nasseri/mikrotik-mcp (Docker, Python, expone tools para VLAN, firewall, DNS, WireGuard, interfaces, queues, etc.).
+
+2. Estructura del proyecto (genera todo esto ahora):
+   - /docker-compose.yml (incluye: mikrotik-mcp, orchestrator, redis, qdrant vector-db, postgres para estado)
+   - /orchestrator/ (FastAPI + LangGraph o CrewAI)
+   - /agents/ (MonitoringAgent, ConfigAgent, FaultAgent – cada uno como módulo independiente)
+   - /skills/ (wrapper MCP client que descubre automáticamente las tools del MikroTik MCP)
+   - /intent-manager/ (RAG con políticas en español)
+   - /digital-twin/ (RouterOS emulado ligero con Docker)
+   - /dev-agent/ (meta-agente que pueda modificar su propio código)
+
+3. Requisitos técnicos obligatorios:
+   - Todos los agentes se comunican vía MCP (JSON-RPC) con el servidor MikroTik.
+   - El Orchestrator usa A2A (Agent-to-Agent) para delegar tareas.
+   - Closed-loop ZSM style: Monitor → Detect anomaly → Plan → Execute via MCP → Verify.
+   - Seguridad: API keys en .env, RBAC básico, aprobación humana opcional.
+   - Idiomas: todo en español (intents y logs).
+   - Documentación: README.md con pasos de instalación + ejemplo de intent.
+
+4. Genera en orden:
+   Paso 1: docker-compose.yml completo y listo para `docker compose up`
+   Paso 2: Estructura completa de carpetas y archivos __init__.py
+   Paso 3: Código del MCP client wrapper (mikrotik_skill.py) que liste y llame todas las tools disponibles
+   Paso 4: Código mínimo del Super-Orchestrator (orchestrator.py) que acepte cualquier intent
+   Paso 5: Un ejemplo completo de agente de configuración (ConfigAgent) que pueda crear VLAN + firewall
+   Paso 6: README.md con comandos para lanzar y prueba inicial (“Optimiza el firewall para bloquear tráfico de una IP”)
+
+Usa las mejores prácticas 2026: pydantic v2, async everywhere, logging estructurado, error handling con retry.
+
+Empieza YA generando el docker-compose.yml y el README.md. Después de cada paso dime “Listo para el siguiente” y continúa.
+
+¡Comienza!
