@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  mikrotik-mcp:
+    image: jeffnasseri/mikrotik-mcp:latest  # Se puede construir desde https://github.com/jeff-nasseri/mikrotik-mcp si la imagen no existe
+    container_name: mikrotik-mcp
+    environment:
+      - ROS_HOST=${ROS_HOST:-192.168.88.1}
+      - ROS_USERNAME=${ROS_USERNAME:-admin}
+      - ROS_PASSWORD=${ROS_PASSWORD:-}
+      - ROS_PORT=${ROS_PORT:-8728}
+    ports:
+      - "5000:5000" # Asumiendo servidor MCP por HTTP/SSE o similar en el puerto 5000
+    restart: unless-stopped
+
+  orchestrator:
+    build:
+      context: .
+      dockerfile: ./orchestrator/Dockerfile
+    container_name: orchestrator
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - QDRANT_URL=http://qdrant:6333
+      - PG_URL=postgresql://user:password@postgres:5432/ainetops
+      - MIKROTIK_MCP_URL=http://mikrotik-mcp:5000
+      - LLM_API_KEY=${LLM_API_KEY} # Groq, Claude, OpenAI, etc
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - qdrant
+      - postgres
+      - mikrotik-mcp
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=${PG_USER:-user}
+      - POSTGRES_PASSWORD=${PG_PASSWORD:-password}
+      - POSTGRES_DB=${PG_DB:-ainetops}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  qdrant_data:
+  pg_data:

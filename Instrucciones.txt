@@ -1,6 +1,5 @@
 Eres un arquitecto senior de sistemas agentic AI especializado en redes. Vamos a crear desde cero el proyecto "AI-NO-MikroTik" (AI Network Operations para MikroTik) siguiendo exactamente esta arquitectura modular agentic:
 
-[PEGA AQUÍ COMPLETA LA ARQUITECTURA QUE TE DI ANTES – el diagrama Mermaid + tabla de capas + componentes]
 flowchart TD
     %% Capa Usuario e Intents
     User[Usuario / Operador<br/>Intents en lenguaje natural] --> Intent[Intent Manager<br/>+ RAG Policies/SLAs]

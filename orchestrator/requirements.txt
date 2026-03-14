@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+mcp
+langchain
+langgraph
+langchain-groq
+langchain-anthropic
+langchain-openai
+redis
+qdrant-client
+psycopg2-binary
+httpx
